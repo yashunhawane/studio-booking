@@ -51,7 +51,7 @@ const BookingList = () => {
   const addBooking = (newBooking) => {
     if (editBooking) {
       setBookings(bookings.map(booking =>
-        booking.booking_id === editBooking.booking_id ? newBooking : booking
+        booking.booking_id === editBooking.booking_id ? { ...newBooking, booking_id: editBooking.booking_id } : booking
       ));
       setEditBooking(null);
     } else {
@@ -63,6 +63,11 @@ const BookingList = () => {
     setShowForm(false);
   };
 
+  const getDayOfWeek = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
   const sortedBookings = bookings.sort((a, b) => parseDateTime(b) - parseDateTime(a));
 
   return (
@@ -70,7 +75,7 @@ const BookingList = () => {
       <div className="mb-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Booking List</h1>
         <button
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          className={`px-4 py-2 rounded ${showForm ? 'bg-red-500' : 'bg-green-500'} text-white hover:${showForm ? 'bg-red-600' : 'bg-green-600'}`}
           onClick={() => {
             setEditBooking(null);
             setShowForm(!showForm);
@@ -82,47 +87,51 @@ const BookingList = () => {
 
       {showForm && <BookingForm onAddBooking={addBooking} booking={editBooking} />}
 
-      <ul className="space-y-4">
-        {sortedBookings.map((booking) => {
-          const price = parseFloat(booking.price);
-          return (
-            <li key={booking.booking_id} className="border p-4 rounded-lg shadow-md bg-white">
-              <p className="text-lg font-semibold text-gray-700">
-                <span className="font-bold">Customer Name:</span> {booking.customer_name}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-bold">Booking Date:</span> {booking.booking_date}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-bold">Booking Time:</span> {booking.booking_time.start} - {booking.booking_time.end}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-bold">Price:</span> ${isNaN(price) ? 'N/A' : price.toFixed(2)}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-bold">Mobile Number:</span> {booking.mobile_number}
-              </p>
-              <p className={`text-sm font-semibold ${booking.status === "Confirmed" ? "text-green-600" : booking.status === "Pending" ? "text-yellow-600" : "text-red-600"}`}>
-                <span className="font-bold">Status:</span> {booking.status}
-              </p>
-              <div className="mt-4 flex space-x-2">
-                <button 
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                  onClick={() => handleEdit(booking)}
-                >
-                  Edit
-                </button>
-                <button 
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  onClick={() => handleDelete(booking.booking_id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      {bookings.length === 0 ? (
+        <p className="text-center text-gray-500">No bookings available.</p>
+      ) : (
+        <ul className="space-y-4">
+          {sortedBookings.map((booking) => {
+            const price = parseFloat(booking.price);
+            return (
+              <li key={booking.booking_id} className="border p-4 rounded-lg shadow-md bg-white">
+                <p className="text-lg font-semibold text-gray-700">
+                  <span className="font-bold">Customer Name:</span> {booking.customer_name}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-bold">Booking Date:</span> {booking.booking_date} ({getDayOfWeek(booking.booking_date)})
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-bold">Booking Time:</span> {booking.booking_time.start} - {booking.booking_time.end}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-bold">Price:</span> ${isNaN(price) ? 'N/A' : price.toFixed(2)}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-bold">Mobile Number:</span> {booking.mobile_number}
+                </p>
+                <p className={`text-sm font-semibold ${booking.status === "Confirmed" ? "text-green-600" : booking.status === "Pending" ? "text-yellow-600" : "text-red-600"}`}>
+                  <span className="font-bold">Status:</span> {booking.status}
+                </p>
+                <div className="mt-4 flex space-x-2">
+                  <button 
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                    onClick={() => handleEdit(booking)}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    onClick={() => handleDelete(booking.booking_id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 };
